@@ -21,7 +21,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
         Route::get('category', 'getCategory');
     });
 
-    // admin
+    // admin frontend
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 
