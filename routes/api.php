@@ -39,7 +39,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
         Route::controller(CategorysController::class)->group(function () {
             Route::get('data-category', 'getCategory_admin');
             Route::post('create-category', 'CreateDataCategory');
-            Route::post('update-category/{slug}', 'UpdateDataCategory');
+            Route::put('update-category/{slug}', 'UpdateDataCategory');
             Route::delete('delete-category/{slug}', 'DeleteDataCategory');
         });
     });
