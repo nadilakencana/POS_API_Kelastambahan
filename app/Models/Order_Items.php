@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Order_Items extends Model
 {
     use HasFactory;
-    protected $table = 'order_items';
+    protected $table = 'order__items';
     protected $guarded = [];
 
     public function order(){

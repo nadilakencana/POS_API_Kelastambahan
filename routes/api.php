@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategorysController;
+use App\Http\Controllers\SalesController;
 
 Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function () {
     // customer frontend
@@ -21,7 +22,14 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
         Route::get('category', 'getCategory');
     });
 
-    // admin frontend
+    // Sales
+
+    Route::controller(SalesController::class)->group(function () {
+        Route::post('order', 'order');
+    });
+
+
+    // admin
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
 

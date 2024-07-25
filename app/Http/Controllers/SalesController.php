@@ -27,17 +27,16 @@ class SalesController extends Controller
             'sub_amount' => 'required|numeric',
             'amount' => 'required|numeric',
             'status' => 'required|string|max:255',
-            'created_by' => 'required|exists:users,id',
             'cart' => 'required|array',
-            'cart.*.id_order' => 'required|exists:orders,id',
+            // 'cart.*.id_order' => 'required|exists:orders,id',
             'cart.*.id_product' => 'required',
             'cart.*.quantity' => 'required|numeric',
             'cart.*.price' => 'required',
-            'cart.*.amount' => 'required',
+            // 'cart.*.amount' => 'required',
             'cart.*.products_logs' => 'required|array',
             'cart.*.products_logs.*.id_product' => 'required|exists:products,id',
-            'cart.*.products_logs.*.id_order' => 'required|exists:orders,id',
-            'cart.*.products_logs.*.id_order_items' => 'required|exists:order_items,id',
+            // 'cart.*.products_logs.*.id_order' => 'required|exists:orders,id',
+            // 'cart.*.products_logs.*.id_order_items' => 'required|exists:order_items,id',
         ]);
         if ($validator->fails()) {
             return response()->json(['errors' => $validator->errors()], 422);
@@ -45,11 +44,11 @@ class SalesController extends Controller
 
         try{
             DB::beginTransaction();
+
             $order = Orders::create([
                 'sub_amount' => $request->sub_amount,
                 'amount' => $request->amount,
                 'status' => 'Open Order',
-                'created_by' => $request->created_by,
                 'order_code' => $this->code_order(),
             ]);
 
@@ -59,7 +58,7 @@ class SalesController extends Controller
                     'id_product' => $item['id_product'],
                     'quantity' => $item['quantity'],
                     'price' => $item['price'],
-                    'amount' => $item['amount'],
+                    'amount' => $item['quantity'] * $item['price'],
                 ]);
 
                 $order_items->save();
@@ -68,7 +67,7 @@ class SalesController extends Controller
                     $product_logs = Product_Logs::create([
                         'id_order' => $order->id,
                         'id_product' => $pro_logs['id_product'],
-                        'id_order_items' =>  $order_items->id,
+                        'id_order_item' =>  $order_items->id,
                     ]);
 
                     $product_logs->save();
@@ -77,7 +76,13 @@ class SalesController extends Controller
 
             DB::commit();
 
-            return response()->json(['message' => 'Order created successfully','order' => $order], 201);
+            return response()->json([
+                'message' => 'Order created successfully',
+                'order' => $order,
+                'detail_order' => $order_items,
+                'product_logs' => $product_logs
+
+                ], 201);
         }catch(\Exception $e){
             return response()->json(['message' => 'Failed to create order','detail' => $e->getMessage()], 500);
         }
