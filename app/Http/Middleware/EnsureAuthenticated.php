@@ -16,10 +16,17 @@ class EnsureAuthenticated
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::check()){
+        if (!Auth::check()) {
             return response()->json([
-                'message' => 'Unauthorized. plase login',
-            ]);
+                'message' => 'Unauthorized. Please login',
+            ], 401);
+        }
+
+
+        if (!Auth::user()->role->role === 'Admin') {
+            return response()->json([
+                'message' => 'Unauthorized. Admin access required',
+            ], 403);
         }
         return $next($request);
     }

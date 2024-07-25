@@ -20,15 +20,7 @@ class CategorysController extends Controller
     }
 
     //api category to admin
-    public function getCategory_admin()
-    {
-       try{
-            $category = Categorys::all();
-            return response()->json(['category' => $category], 200);
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch category','detail' => $e->getMessage()], 500);
-        }
-    }
+    
 
     public function CreateDataCategory(Request $request){
 

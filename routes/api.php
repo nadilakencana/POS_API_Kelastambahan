@@ -12,7 +12,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
     // customer frontend
     // product
     Route::controller(ProductController::class)->group(function () {
-        Route::get('product', 'getProductCustomer');
+        Route::get('product', 'getProduct_data');
         Route::get('product-detail/{slug}', 'getProduct_Detail_customer');
         Route::get('product-category/{slug}', 'getProduct_byCategory');
     });
@@ -26,6 +26,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
 
     Route::controller(SalesController::class)->group(function () {
         Route::post('order', 'order');
+        Route::get('Detail-Orde/{code_orde}', 'detail_order');
     });
 
 
@@ -37,7 +38,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
         Route::post('logout', [AuthController::class, 'logout']);
         // product
         Route::controller(ProductController::class)->group(function () {
-            Route::get('data-product', 'getProduct_data');
+            Route::get('data-product/admin', 'getProduct_data');
             Route::post('create-product', 'CreateDataProdut');
             Route::post('update-product/{slug}', 'UpdateDataProdut');
             Route::delete('delete-product/{slug}', 'deleteProduct');
@@ -45,10 +46,16 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
         // category
 
         Route::controller(CategorysController::class)->group(function () {
-            Route::get('data-category', 'getCategory_admin');
+            Route::get('data-category', 'getCategory');
             Route::post('create-category', 'CreateDataCategory');
             Route::put('update-category/{slug}', 'UpdateDataCategory');
             Route::delete('delete-category/{slug}', 'DeleteDataCategory');
+        });
+
+        // Sales
+        Route::controller(SalesController::class)->group(function () {
+            Route::post('order/admin', 'order');
+            Route::get('Detail-Orde/admin/{code_orde}', 'detail_order');
         });
     });
 });

@@ -10,15 +10,15 @@ class ProductController extends Controller
 {
 
     // api product to cusstomer
-    public function getProductCustomer(){
+    public function getProduct_data(){
         try{
             $products = Products::all();
             return response()->json(['products' => $products], 200);
         }catch(\Exception $e){
             return response()->json(['message' => 'Failed to fetch products','detail' => $e->getMessage()], 500);
         }
-
     }
+
 
     public function getProduct_Detail_customer($slug)
     {
@@ -42,14 +42,6 @@ class ProductController extends Controller
     }
 
     // api product to admin
-    public function getProduct_data(){
-        try{
-            $products = Products::all();
-            return response()->json(['products' => $products], 200);
-        }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch products','detail' => $e->getMessage()], 500);
-        }
-    }
 
     public function CreateDataProdut(Request $request)
     {

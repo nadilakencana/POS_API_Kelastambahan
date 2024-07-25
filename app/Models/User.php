@@ -59,4 +59,8 @@ class User extends Authenticatable
     public function order_items(){
           return $this->hasMany(Order_Items::class, 'created_by', 'id');
     }
+
+    public function is_Admin(){
+        return $this->role->role === 'Admin';
+    }
 }
