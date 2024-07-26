@@ -6,6 +6,7 @@ use App\Http\Controllers\AuthController;
 use Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\CategorysController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SalesController;
 
 Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function () {
@@ -56,6 +57,15 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
         Route::controller(SalesController::class)->group(function () {
             Route::post('order/admin', 'order');
             Route::get('Detail-Orde/admin/{code_orde}', 'detail_order');
+            Route::post('payment/admin/{code_orde}', 'payment_order');
+        });
+
+        //payment methode module
+        Route::controller(PaymentController::class)->group(function () {
+            Route::get('payment', 'getPayment');
+            Route::post('payment/create', 'payment');
+            Route::delete('payment/{id}', 'deletePayment');
+            Route::put('payment/update/{id}', 'updatePayment');
         });
     });
 });

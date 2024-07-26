@@ -45,8 +45,6 @@ class SalesController extends Controller
             DB::beginTransaction();
 
             $order = Orders::create([
-                'sub_amount' => $request->sub_amount,
-                'amount' => $request->amount,
                 'status' => 'Open Order',
                 'order_code' => $this->code_order(),
             ]);
@@ -77,6 +75,11 @@ class SalesController extends Controller
                     $product_logs->save();
                 }
             }
+
+            $order_items_sum = Order_Items::where('id_order', $order->id)->sum('amount');
+            $order['sub_amount'] = $order_items_sum;
+            $order['amount'] = $order_items_sum;
+            $order->save();
 
             DB::commit();
 
@@ -123,10 +126,86 @@ class SalesController extends Controller
                 'detail_order' => $order_items
                 ], 200);
 
-                
+
         }catch(\Exception $e){
             return response()->json(['message' => 'Failed to fetch Payment Order','detail' => $e->getMessage()], 500);
         }
 
+    }
+
+    public function modify_order(Request $request){
+        //
+        try{
+            DB::beginTransaction();
+            $order = Orders::where('order_code', $request->get('code_order'))->first();
+
+            $order_items = Order_Items::where('id_order', $order->id)->get();
+
+            if(!$order->status =='Paid'){
+               foreach ($request->items as $item) {
+                if (isset($item['id'])) {
+
+                    $orderItem = Order_Items::findOrFail($item['id']);
+
+                    $orderItem->update([
+                        'id_product' => $item['id_product'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'amount' => $item['quantity'] * $item['price'],
+                    ]);
+                    $orderItem->save();
+
+
+                    $product_logs = Product_Logs::where('id_order_item', $orderItem->id)->first();
+                    if($product_logs){
+                        $product_logs->update([
+                            'id_product' => $orderItem->id_product,
+                        ]);
+                        $product_logs->save();
+                    }
+                } else {
+                    // Create new item
+                    $orderItem = Order_Items::create([
+                        'id_order' => $order->id,
+                        'id_product' => $item['id_product'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'amount' => $item['quantity'] * $item['price'],
+                    ]);
+
+                    $orderItem->save();
+
+                    foreach ($item['products_logs'] as $log) {
+                        Product_Logs::create([
+                            'id_order' => $order->id,
+                            'id_product' => $log['id_product'],
+                            'id_order_item' => $orderItem->id,
+                        ]);
+
+                    }
+                }
+
+                
+
+            }
+
+            // Update order totals
+            $order->sub_amount = $order->order_items->sum('amount');
+            $order->amount = $order->sub_amount; // Or apply any discount/tax
+            $order->save();
+
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'message' => 'Order items added/updated successfully',
+                'order' => $order,
+                'order_items' =>  $order_items,
+                'product_logs' => Product_Logs::where('id_order', $order->id)->get(),
+            ], 200);
+        }catch(\Exception $e){
+            return response()->json(['message' => 'Failed to fetch Modify Order','detail' => $e->getMessage()], 500);
+        }
     }
 }
