@@ -105,70 +105,7 @@ class SalesController extends Controller
     }
 
     // admin
-    // public function Post_order(Request $request){
-    //     $validator = Validator::make($request->all(), [
-    //         'sub_amount' => 'required|numeric',
-    //         'amount' => 'required|numeric',
-    //         'status' => 'required|string|max:255',
-    //         'cart' => 'required|array',
-    //         'cart.*.id_product' => 'required',
-    //         'cart.*.quantity' => 'required|numeric',
-    //         'cart.*.price' => 'required',
-    //         'cart.*.products_logs' => 'required|array',
-    //         'cart.*.products_logs.*.id_product' => 'required|exists:products,id',
 
-    //     ]);
-    //     if ($validator->fails()) {
-    //         return response()->json(['errors' => $validator->errors()], 422);
-    //     }
-
-    //     try{
-    //         DB::beginTransaction();
-
-    //         $order = Orders::create([
-    //             'sub_amount' => $request->sub_amount,
-    //             'amount' => $request->amount,
-    //             'status' => 'Open Order',
-    //             'order_code' => $this->code_order(),
-    //             'created_by' => Auth::user()->id,
-    //         ]);
-
-    //         foreach($request->cart as $item){
-    //            $order_items =  Order_Items::create([
-    //                 'id_order' => $order->id,
-    //                 'id_product' => $item['id_product'],
-    //                 'quantity' => $item['quantity'],
-    //                 'price' => $item['price'],
-    //                 'amount' => $item['quantity'] * $item['price'],
-    //                 'created_by' => Auth::user()->id,
-    //             ]);
-
-    //             $order_items->save();
-
-    //             foreach($item['products_logs'] as $pro_logs){
-    //                 $product_logs = Product_Logs::create([
-    //                     'id_order' => $order->id,
-    //                     'id_product' => $pro_logs['id_product'],
-    //                     'id_order_item' =>  $order_items->id,
-    //                 ]);
-
-    //                 $product_logs->save();
-    //             }
-    //         }
-
-    //         DB::commit();
-
-    //         return response()->json([
-    //             'message' => 'Order created successfully',
-    //             'order' => $order,
-    //             'detail_order' => $order_items,
-    //             'product_logs' => $product_logs
-
-    //             ], 201);
-    //     }catch(\Exception $e){
-    //         return response()->json(['message' => 'Failed to create order','detail' => $e->getMessage()], 500);
-    //     }
-    // }
 
     public function payment_order(Request $request, $code_order){
         try{
@@ -185,6 +122,8 @@ class SalesController extends Controller
                 'order' => $order,
                 'detail_order' => $order_items
                 ], 200);
+
+                
         }catch(\Exception $e){
             return response()->json(['message' => 'Failed to fetch Payment Order','detail' => $e->getMessage()], 500);
         }
