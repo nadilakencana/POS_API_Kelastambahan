@@ -117,7 +117,7 @@ class SalesController extends Controller
 
             $order->update([
                 'status' => 'Paid',
-                'id_pyment_methode' => $request->id_payment_method,
+                'id_payment_method' => $request->id_payment_method,
             ]);
 
             return response()->json([
@@ -185,7 +185,7 @@ class SalesController extends Controller
                     }
                 }
 
-                
+
 
             }
 
