@@ -10,6 +10,7 @@ use App\Models\Products;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Models\User;
 class SalesController extends Controller
 {
     public function code_order($length=5){
@@ -26,8 +27,8 @@ class SalesController extends Controller
     // customer
     public function order(Request $request){
         $validator = Validator::make($request->all(), [
-            'sub_amount' => 'required|numeric',
-            'amount' => 'required|numeric',
+            // 'sub_amount' => 'required|numeric',
+            // 'amount' => 'required|numeric',
             'status' => 'required|string|max:255',
             'cart' => 'required|array',
             'cart.*.id_product' => 'required',
@@ -44,41 +45,48 @@ class SalesController extends Controller
         try{
             DB::beginTransaction();
 
-            $order = Orders::create([
-                'status' => 'Open Order',
-                'order_code' => $this->code_order(),
-            ]);
-            if (Auth::user()->is_Admin) {
-                $order['created_by'] = Auth::user()->id;
+            $order = new Orders();
+            $order->status = 'Open Order';
+            $order->order_code = $this->code_order();
+            $order->sub_amount = 0;
+            $order->amount = 0;
+            if (Auth::user()->is_Admin()) {
+                $order->created_by = Auth::user()->id;
             }
 
-            foreach($request->cart as $item){
-               $order_items =  Order_Items::create([
-                    'id_order' => $order->id,
-                    'id_product' => $item['id_product'],
-                    'quantity' => $item['quantity'],
-                    'price' => $item['price'],
-                    'amount' => $item['quantity'] * $item['price'],
-                ]);
-                if (Auth::user()->is_Admin) {
-                    $order_items['created_by'] = Auth::user()->id;
-                }
-                $order_items->save();
+            $order->save();
 
-                foreach($item['products_logs'] as $pro_logs){
-                    $product_logs = Product_Logs::create([
+            if($order){
+                foreach($request->cart as $item){
+                    $order_items =  Order_Items::create([
                         'id_order' => $order->id,
-                        'id_product' => $pro_logs['id_product'],
-                        'id_order_item' =>  $order_items->id,
+                        'id_product' => $item['id_product'],
+                        'quantity' => $item['quantity'],
+                        'price' => $item['price'],
+                        'amount' => $item['quantity'] * $item['price'],
                     ]);
+                    if (Auth::user()->is_Admin()) {
+                        $order_items['created_by'] = Auth::user()->id;
+                    }
+                    $order_items->save();
 
-                    $product_logs->save();
+                    foreach($item['products_logs'] as $pro_logs){
+                        $product_logs = Product_Logs::create([
+                            'id_order' => $order->id,
+                            'id_product' => $pro_logs['id_product'],
+                            'id_order_item' =>  $order_items->id,
+                        ]);
+
+                        $product_logs->save();
+                    }
                 }
             }
+
 
             $order_items_sum = Order_Items::where('id_order', $order->id)->sum('amount');
-            $order['sub_amount'] = $order_items_sum;
-            $order['amount'] = $order_items_sum;
+            $order = Orders::find($order->id);
+            $order->sub_amount = $order_items_sum;
+            $order->amount = $order_items_sum;
             $order->save();
 
             DB::commit();
@@ -137,63 +145,66 @@ class SalesController extends Controller
         //
         try{
             DB::beginTransaction();
-            $order = Orders::where('order_code', $request->get('code_order'))->first();
+            $order = Orders::where('order_code', $request->get('order_code'))->first();
 
             $order_items = Order_Items::where('id_order', $order->id)->get();
 
-            if(!$order->status =='Paid'){
+            if($order->status !== 'Paid'){
                foreach ($request->items as $item) {
-                if (isset($item['id'])) {
+                    if (!empty($item['id'])) {
 
-                    $orderItem = Order_Items::findOrFail($item['id']);
+                        $orderItem = Order_Items::findOrFail($item['id']);
 
-                    $orderItem->update([
-                        'id_product' => $item['id_product'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                        'amount' => $item['quantity'] * $item['price'],
-                    ]);
-                    $orderItem->save();
-
-
-                    $product_logs = Product_Logs::where('id_order_item', $orderItem->id)->first();
-                    if($product_logs){
-                        $product_logs->update([
-                            'id_product' => $orderItem->id_product,
+                        $orderItem->update([
+                            'id_product' => $item['id_product'],
+                            'quantity' => $item['quantity'],
+                            'price' => $item['price'],
+                            'amount' => $item['quantity'] * $item['price'],
                         ]);
-                        $product_logs->save();
-                    }
-                } else {
-                    // Create new item
-                    $orderItem = Order_Items::create([
-                        'id_order' => $order->id,
-                        'id_product' => $item['id_product'],
-                        'quantity' => $item['quantity'],
-                        'price' => $item['price'],
-                        'amount' => $item['quantity'] * $item['price'],
-                    ]);
+                        $orderItem->save();
 
-                    $orderItem->save();
 
-                    foreach ($item['products_logs'] as $log) {
-                        Product_Logs::create([
+                        $product_logs = Product_Logs::where('id_order_item', $orderItem->id)->first();
+                        if($product_logs){
+                            $product_logs->update([
+                                'id_product' => $orderItem->id_product,
+                            ]);
+                            $product_logs->save();
+                        }
+                    } else {
+                        // Create new item
+                        $orderItem = Order_Items::create([
                             'id_order' => $order->id,
-                            'id_product' => $log['id_product'],
-                            'id_order_item' => $orderItem->id,
+                            'id_product' => $item['id_product'],
+                            'quantity' => $item['quantity'],
+                            'price' => $item['price'],
+                            'amount' => $item['quantity'] * $item['price'],
+                            'created_by' => Auth::user()->id
                         ]);
 
+                        $orderItem->save();
+
+                        foreach ($item['products_logs'] as $log) {
+                            Product_Logs::create([
+                                'id_order' => $order->id,
+                                'id_product' => $log['id_product'],
+                                'id_order_item' => $orderItem->id,
+                            ]);
+
+                        }
                     }
                 }
 
+                // Update order totals
+                $order_items_sum = Order_Items::where('id_order', $order->id)->sum('amount');
 
+                $order->sub_amount = $order_items_sum;
+                $order->amount = $order->sub_amount;
+                $order->created_by = Auth::user()->id ;
+                $order->save();
 
-            }
-
-            // Update order totals
-            $order->sub_amount = $order->order_items->sum('amount');
-            $order->amount = $order->sub_amount; // Or apply any discount/tax
-            $order->save();
-
+            }else{
+                return response()->json(['message' => 'Order already paid'], 500);
             }
 
             DB::commit();
@@ -208,4 +219,32 @@ class SalesController extends Controller
             return response()->json(['message' => 'Failed to fetch Modify Order','detail' => $e->getMessage()], 500);
         }
     }
+
+    public function modify_delete_item(Request $request){
+        try{
+
+            $order = Orders::where('order_code', $request->get('order_code'))->first();
+            if($order->status !== 'Paid'){
+                $order_item = Order_Items::where('id', $request->get('id_items_order'))->where('id_order', $order->id)->first();
+                $order_item->delete();
+
+                $sum_order_item = Order_Items::where('id_order', $order->id)->sum('amount');
+                $order->sub_amount = $sum_order_item;
+                $order->amount = $order->sub_amount;
+                $order->save();
+
+                 return response()->json(['message' => 'Order item deleted successfully',
+                'order' => $order,
+                'detail_order' => Order_Items::where('id_order', $order->id)->get()
+                ], 200);
+            }else{
+                return response()->json(['message' => 'Order already paid'], 500);
+            }
+
+        }catch(\Exception $e){
+            return response()->json(['message' => 'Failed to fetch Modify Order','detail' => $e->getMessage()], 500);
+        }
+    }
+
+
 }

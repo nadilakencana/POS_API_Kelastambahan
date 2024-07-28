@@ -58,6 +58,8 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
             Route::post('order/admin', 'order');
             Route::get('Detail-Orde/admin/{code_orde}', 'detail_order');
             Route::post('payment/admin/{code_orde}', 'payment_order');
+            Route::post('modify/order', 'modify_order');
+            Route::post('delete-items/order/admin', 'modify_delete_item');
         });
 
         //payment methode module

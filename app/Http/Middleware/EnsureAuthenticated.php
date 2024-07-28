@@ -23,7 +23,7 @@ class EnsureAuthenticated
         }
 
 
-        if (!Auth::user()->role->role === 'Admin') {
+        if (!Auth::user()->is_Admin()) {
             return response()->json([
                 'message' => 'Unauthorized. Admin access required',
             ], 403);
