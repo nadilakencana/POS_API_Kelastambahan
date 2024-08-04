@@ -60,7 +60,10 @@ class User extends Authenticatable
           return $this->hasMany(Order_Items::class, 'created_by', 'id');
     }
 
-    public function is_Admin(){
+
+    public function is_Admin()
+    {
         return $this->role->role === 'Admin';
     }
+
 }

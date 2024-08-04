@@ -13,9 +13,12 @@ class ProductController extends Controller
     public function getProduct_data(){
         try{
             $products = Products::all();
-            return response()->json(['products' => $products], 200);
+            return response()->json([
+                'message' => 'Products fetched successfully',
+                'data' => $products
+            ], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch products','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to fetch products','data' => $e->getMessage()], 500);
         }
     }
 
@@ -24,9 +27,12 @@ class ProductController extends Controller
     {
         try {
             $product = Products::where('slug', $slug)->firstOrFail();
-            return response()->json(['product' => $product], 200);
+            return response()->json([
+                'message' => 'Product fetched successfully',
+                'data' => $product
+            ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Product not found', 'details' => $e->getMessage()], 404);
+            return response()->json(['message' => 'Product not found', 'data' => $e->getMessage()], 404);
         }
     }
     public function getProduct_byCategory($slug)
@@ -35,9 +41,12 @@ class ProductController extends Controller
             $products_category = Products::whereHas('category', function ($query) use ($slug){
                 $query->where('slug', $slug);
             })->get();
-            return response()->json(['product' => $products_category], 200);
+            return response()->json([
+                'message' => 'Products fetched successfully',
+                'data' => $products_category
+            ], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Product not found', 'details' => $e->getMessage()], 404);
+            return response()->json(['message' => 'Product not found', 'data' => $e->getMessage()], 404);
         }
     }
 
@@ -71,9 +80,9 @@ class ProductController extends Controller
 
             $product = Products::create($data);
 
-            return response()->json(['message' => 'Product created successfully','product' => $product], 201);
+            return response()->json(['message' => 'Product created successfully','data' => $product], 201);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Product not created', 'details' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Product not created', 'data' => $e->getMessage()], 500);
         }
     }
 
@@ -109,9 +118,9 @@ class ProductController extends Controller
             }
 
             $product->update($data);
-            return response()->json(['message' => 'Product updated successfully','product' => $product], 200);
+            return response()->json(['message' => 'Product updated successfully','data' => $product], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Product not updated', 'details' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Product not updated', 'data' => $e->getMessage()], 500);
         }
     }
 
@@ -128,7 +137,7 @@ class ProductController extends Controller
             $product->delete();
             return response()->json(['message' => 'Product deleted successfully'], 200);
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Product not deleted', 'details' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Product not deleted', 'data' => $e->getMessage()], 500);
         }
     }
 }

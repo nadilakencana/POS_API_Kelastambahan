@@ -17,18 +17,24 @@ class PaymentController extends Controller
         }
         try{
             $payment = Payments::create($request->all());
-            return response()->json(['payment' => $payment], 200);
+            return response()->json([
+                'message' => 'Payment created successfully',
+                'data' => $payment
+            ], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to create payment','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to create payment','data' => $e->getMessage()], 500);
         }
     }
 
     public function getPayment(){
         try{
             $payment = Payments::all();
-            return response()->json(['payment' => $payment], 200);
+            return response()->json([
+                'message' => 'Payment fetched successfully',
+                'data' => $payment
+            ], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch payment','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to fetch payment','data' => $e->getMessage()], 500);
         }
     }
 
@@ -43,9 +49,12 @@ class PaymentController extends Controller
         try{
             $payment = Payments::find($id);
             $payment->update($request->all());
-            return response()->json(['payment' => $payment], 200);
+            return response()->json([
+                'message' => 'Payment updated successfully',
+                'data' => $payment
+            ], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to update payment','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to update payment','data' => $e->getMessage()], 500);
         }
     }
 
@@ -55,7 +64,7 @@ class PaymentController extends Controller
             $payment->delete();
             return response()->json(['message' => 'Payment deleted successfully'], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to delete payment','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to delete payment','data' => $e->getMessage()], 500);
         }
     }
 }

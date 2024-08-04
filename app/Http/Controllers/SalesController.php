@@ -27,8 +27,7 @@ class SalesController extends Controller
     // customer
     public function order(Request $request){
         $validator = Validator::make($request->all(), [
-            // 'sub_amount' => 'required|numeric',
-            // 'amount' => 'required|numeric',
+
             'status' => 'required|string|max:255',
             'cart' => 'required|array',
             'cart.*.id_product' => 'required',
@@ -93,13 +92,14 @@ class SalesController extends Controller
 
             return response()->json([
                 'message' => 'Order created successfully',
-                'order' => $order,
-                'detail_order' => $order_items,
-                'product_logs' => $product_logs
-
-                ], 201);
+                'data' =>[
+                    'order' => $order,
+                    'detail_order' => $order_items,
+                    'product_logs' => $product_logs
+                ]
+            ], 201);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to create order','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to create order','data' => $e->getMessage()], 500);
         }
     }
 
@@ -109,9 +109,16 @@ class SalesController extends Controller
             $order = Orders::where('order_code', $code_order)->first();
             $order_items = Order_Items::where('id_order', $order->id)->get();
 
-            return response()->json(['order' => $order, 'detail_order' => $order_items], 200);
+            return response()->json([
+                'message' => 'Detail Order fetched successfully',
+                'data' => [
+                    'order' => $order,
+                    'detail_order' => $order_items
+                ]
+
+            ], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch order','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to fetch order','data' => $e->getMessage()], 500);
         }
     }
 
@@ -130,13 +137,16 @@ class SalesController extends Controller
 
             return response()->json([
                 'message' => 'Payment Order successfully',
-                'order' => $order,
-                'detail_order' => $order_items
-                ], 200);
+                'data' => [
+                    'order' => $order,
+                    'detail_order' => $order_items
+                ]
+
+            ], 200);
 
 
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch Payment Order','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to fetch Payment Order','data' => $e->getMessage()], 500);
         }
 
     }
@@ -211,12 +221,15 @@ class SalesController extends Controller
 
             return response()->json([
                 'message' => 'Order items added/updated successfully',
-                'order' => $order,
-                'order_items' =>  $order_items,
-                'product_logs' => Product_Logs::where('id_order', $order->id)->get(),
+                'data' => [
+                    'order' => $order,
+                    'order_items' =>  $order_items,
+                    'product_logs' => Product_Logs::where('id_order', $order->id)->get(),
+                ]
+
             ], 200);
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch Modify Order','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to fetch Modify Order','data' => $e->getMessage()], 500);
         }
     }
 
@@ -233,16 +246,20 @@ class SalesController extends Controller
                 $order->amount = $order->sub_amount;
                 $order->save();
 
-                 return response()->json(['message' => 'Order item deleted successfully',
-                'order' => $order,
-                'detail_order' => Order_Items::where('id_order', $order->id)->get()
+                return response()->json([
+                    'message' => 'Order item deleted successfully',
+                    'data' => [
+                         'order' => $order,
+                        'detail_order' => Order_Items::where('id_order', $order->id)->get()
+                    ]
+
                 ], 200);
             }else{
                 return response()->json(['message' => 'Order already paid'], 500);
             }
 
         }catch(\Exception $e){
-            return response()->json(['message' => 'Failed to fetch Modify Order','detail' => $e->getMessage()], 500);
+            return response()->json(['message' => 'Failed to fetch Modify Order','data' => $e->getMessage()], 500);
         }
     }
 
