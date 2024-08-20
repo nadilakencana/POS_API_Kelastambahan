@@ -11,6 +11,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
+use Illuminate\Support\Carbon;
+use Exception;
+
 class SalesController extends Controller
 {
     public function code_order($length=5){
@@ -262,6 +265,104 @@ class SalesController extends Controller
             return response()->json(['message' => 'Failed to fetch Modify Order','data' => $e->getMessage()], 500);
         }
     }
+
+    public function dailyReports(Request $request){
+        try{
+            
+            $startDate = Carbon::parse($request->query('startDate'))->startOfDay()->toDateTimeString();
+            $endDate = Carbon::parse($request->query('endDate'))->endOfDay()->toDateTimeString();
+            
+
+            $orders = Orders::where('status', 'Paid')
+            ->with('order_items')
+            ->whereBetween('created_at', [$startDate, $endDate])->get();
+
+            $totalAmount = Orders::where('status', 'Paid')->whereBetween('created_at', [$startDate, $endDate])->sum('amount');
+             
+
+            return response()->json([
+                'message' => 'Daily reports fetched successfully',
+                'data' =>[
+                    'sum_amount' => $totalAmount,
+                    'orders' => $orders,
+                   
+
+                ]
+            ], 200);
+        }catch(\Exception $e){
+            return response()->json([
+                'message'=> 'Faild to fetch daily reports',
+                'data' => $e->getMessage()
+            ]);
+        }
+    }
+
+    public function weeklyReports(Request $request)
+    {
+        try {
+           
+            $startDate = Carbon::parse($request->query('startDate'))->startOfWeek()->toDateTimeString();
+            $endDate = Carbon::parse($request->query('endDate'))->endOfWeek()->toDateTimeString();
+
+           
+            $orders = Orders::where('status', 'Paid')
+                ->with('order_items') 
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->get();
+
+          
+            $totalAmount = Orders::where('status', 'Paid')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->sum('amount');
+
+            return response()->json([
+                'message' => 'Weekly reports fetched successfully',
+                'data' => [
+                    'sum_amount' => $totalAmount,
+                    'orders' => $orders,
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch weekly reports',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function monthlyReports(Request $request)
+    {
+        try {
+           
+            $startDate = Carbon::parse($request->query('startDate'))->startOfMonth()->toDateTimeString();
+            $endDate = Carbon::parse($request->query('endDate'))->endOfMonth()->toDateTimeString();
+
+           
+            $orders = Orders::where('status', 'Paid')
+                ->with('order_items') 
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->get();
+
+           
+            $totalAmount = Orders::where('status', 'Paid')
+                ->whereBetween('created_at', [$startDate, $endDate])
+                ->sum('amount');
+
+            return response()->json([
+                'message' => 'Monthly reports fetched successfully',
+                'data' => [
+                    'sum_amount' => $totalAmount,
+                    'orders' => $orders,
+                ]
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Failed to fetch monthly reports',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
 
 }

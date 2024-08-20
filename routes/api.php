@@ -60,6 +60,9 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
             Route::post('payment/admin/{code_orde}', 'payment_order');
             Route::post('modify/order', 'modify_order');
             Route::post('delete-items/order/admin', 'modify_delete_item');
+            // report
+
+            Route::get('daily-report', 'dailyReports');
         });
 
         //payment methode module
@@ -69,5 +72,7 @@ Route::middleware([EnsureFrontendRequestsAreStateful::class])->group(function ()
             Route::delete('payment/{id}', 'deletePayment');
             Route::put('payment/update/{id}', 'updatePayment');
         });
+
+
     });
 });
