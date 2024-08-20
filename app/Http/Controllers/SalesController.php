@@ -278,15 +278,18 @@ class SalesController extends Controller
             ->whereBetween('created_at', [$startDate, $endDate])->get();
 
             $totalAmount = Orders::where('status', 'Paid')->whereBetween('created_at', [$startDate, $endDate])->sum('amount');
-             
+            $itm_sum = Order_Items::whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', 'Paid');
+            })->sum('quantity');
 
             return response()->json([
                 'message' => 'Daily reports fetched successfully',
                 'data' =>[
                     'sum_amount' => $totalAmount,
                     'orders' => $orders,
-                   
-
+                    'sum_item_sold' =>$itm_sum
+                    
                 ]
             ], 200);
         }catch(\Exception $e){
@@ -315,11 +318,17 @@ class SalesController extends Controller
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->sum('amount');
 
+            $itm_sum = Order_Items::whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', 'Paid');
+            })->sum('quantity');
+
             return response()->json([
                 'message' => 'Weekly reports fetched successfully',
                 'data' => [
                     'sum_amount' => $totalAmount,
                     'orders' => $orders,
+                    'sum_item_sold' => $itm_sum
                 ]
             ], 200);
         } catch (\Exception $e) {
@@ -348,11 +357,18 @@ class SalesController extends Controller
                 ->whereBetween('created_at', [$startDate, $endDate])
                 ->sum('amount');
 
+            $itm_sum = Order_Items::whereHas('order', function ($query) use ($startDate, $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate])
+                ->where('status', 'Paid');
+            })->sum('quantity');
+
             return response()->json([
                 'message' => 'Monthly reports fetched successfully',
                 'data' => [
                     'sum_amount' => $totalAmount,
                     'orders' => $orders,
+                    'sum_item_sold' => $itm_sum
+
                 ]
             ], 200);
         } catch (\Exception $e) {
